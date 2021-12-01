@@ -3,10 +3,11 @@ import requests
 import os
 from dotenv import load_dotenv
 import argparse
+from datetime import timedelta, datetime
+import tweepy
+
 # Load authentication keys into environment
 load_dotenv()
-
-base_url = 'https://api.twitter.com/'
 
 def parse_args():
 
@@ -14,59 +15,62 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', help='<query_file.txt>', required=True)
     parser.add_argument('-o', help='<output.json>', required=True)
+    parser.add_argument('-n', help='<sample size>', default=5000)
+    parser.add_argument('-since_id', help='id of last tweet', default=None)
     args = parser.parse_args()
 
-    return args.i, args.o
+    return args.i, args.o, int(args.n), args.since_id
 
-def authenticate():
-    # Create authentication token
-    auth = requests.auth.HTTPBasicAuth(os.getenv('API_KEY'), os.getenv('API_SECRET'))
+def get_api():
+    auth = tweepy.AppAuthHandler(os.getenv('API_KEY'), os.getenv('API_SECRET'))
+    api = tweepy.API(auth, wait_on_rate_limit=True)
 
-    # Create login type dictionary with login credentials
-    data = {
-        'grant_type': 'client_credentials',
-    }
-
-    # Create user-agent in headers
-    headers = {'User-Agent':'vaxx-sentiment/0.0.1'}
-
-    # Request access token from reddit api
-    res = requests.post(f'{base_url}oauth2/token', auth=auth,
-                        data=data, headers=headers)
-
-    # Get the token
-    TOKEN = res.json()['access_token']
-
-    # Add authorization to headers
-    headers['Authorization'] = f'bearer {TOKEN}'
-
-    return headers
+    return api
 
 def get_query(input_fname):
     
     with open(input_fname, 'r') as f:
-        query = f.read()
-
+        query = f.read().rstrip('\n')
+    
     return query
 
-def get_sample(headers, query):
-    
-    re = requests.get(f'{base_url}2/tweets/search/recent', headers=headers, params={'query':query, 'max_results':'100'})
 
-    return re.json()
+def get_sample(api, query, sample_size, since_id=None):
+    
+    tweets = {}
+    newest = None
+    newest_id = None
+    for tweet in tweepy.Cursor(api.search_tweets, query, since_id=since_id, count=100).items(sample_size):
+        if tweet.id not in tweets:
+            tweets[tweet.id_str] = {}
+            tweets[tweet.id_str]['text'] = tweet.text
+            tweets[tweet.id_str]['retweet_count'] = tweet.retweet_count
+            tweets[tweet.id_str]['favorite_count'] = tweet.favorite_count
+            
+            if newest == None:
+                newest = tweet.created_at
+                newest_id = tweet.id
+            elif tweet.created_at > newest:
+                newest = tweet.created_at
+                newest_id = tweet.id
+    
+    return tweets, newest_id
+
 
 def main():
 
-    input_fname, output_fname = parse_args()
+    input_fname, output_fname, sample_size, since_id = parse_args()
     
     query = get_query(input_fname)
-
-    headers = authenticate()
-        
-    sample = get_sample(headers, query)
     
+    api = get_api()
+    
+    sample, newest_id = get_sample(api, query, sample_size, since_id)
+   
+    print(f'The id of the latest tweet in our dataset is: {newest_id}')
+
     with open(output_fname, 'w') as f:
-        json.dump(sample, f, indent=3)
+        json.dump(sample, f, indent=2)
 
 if __name__=='__main__':
     main()
