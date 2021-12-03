@@ -6,8 +6,8 @@ import argparse
 from datetime import timedelta, datetime
 import tweepy
 
-def parse_args():
 
+def parse_args():
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', help='<query_file.txt>', required=True)
@@ -23,8 +23,7 @@ def parse_args():
 
 
 def get_client():
-    # Authenticate using env keys and initialize API object
-    #auth = tweepy.AppAuthHandler(os.getenv('API_KEY'), os.getenv('API_SECRET'))
+    # Authenticate using env keys and initialize API client
     api_client = tweepy.Client(os.getenv('BEARER_TOKEN'),os.getenv('CONSUMER_KEY'), os.getenv('CONSUMER_SECRET'),
                                os.getenv('API_KEY'), os.getenv('API_SECRET'), return_type=requests.Response, wait_on_rate_limit=True)
 
@@ -32,7 +31,7 @@ def get_client():
 
 
 def get_query(input_fname):
-    # Load query from file    
+    # Load query from text file    
     with open(input_fname, 'r') as f:
         query = f.read().rstrip('\n')
 
@@ -40,24 +39,30 @@ def get_query(input_fname):
 
 
 def search_tweets(api_client, query, sample_size, since_id, until_id, end_time, start_time):
+    # Initialize save list and parameters
     responses = []
     next_token = None
-    tweet_fields = ['public_metrics', 'created_at']
     oldest_id = None
     newest_id = None
+    tweet_fields = ['public_metrics', 'created_at']
     
+    # Verify sample size and max number of results parameters
     if sample_size < 100:
         max_results = sample_size
     else:
         max_results = 100
-
+    
+    # Loop until sample has been collected
     while sample_size > 0:
+        # Make search request to Twitter API
         re = api_client.search_recent_tweets(query, end_time=end_time, max_results=max_results, next_token=next_token, since_id=since_id, tweet_fields=tweet_fields,
                                              until_id=until_id, start_time=start_time)
+        # Save data
         json_re = re.json()
         next_token = json_re['meta']['next_token']
         sample_size -= json_re['meta']['result_count']
-
+        
+        # Keep track of oldest and newest tweets sampled
         if newest_id == None:
             newest_id = json_re['meta']['newest_id']
         elif json_re['meta']['newest_id'] > newest_id:
@@ -68,12 +73,14 @@ def search_tweets(api_client, query, sample_size, since_id, until_id, end_time, 
         elif json_re['meta']['oldest_id'] < oldest_id:
             oldest_id = json_re['meta']['oldest_id']
         
+        # Add json data to list
         responses.append(json_re)
 
     return responses, oldest_id, newest_id 
 
-def get_json(responses):
 
+def get_json(responses):
+    # Store data from each json
     json_dict = {'data':[]}
 
     for re in responses:
@@ -81,10 +88,10 @@ def get_json(responses):
 
     return json_dict
 
+
 def collect_data(input_fname, output_fname, sample_size, since_id=None, max_id=None, end_time=None, start_time=None):
-    # Function for running as import
+    # Function for running script as import, same inputs
     
-    # Load authentication keys into environment
     load_dotenv()    
     
     query = get_query(input_fname)
@@ -99,6 +106,7 @@ def collect_data(input_fname, output_fname, sample_size, since_id=None, max_id=N
         json.dump(json_dict, f, indent=2)
     
     return oldest_id, newest_id
+
 
 def main():
     # Load authentication keys into environment
@@ -118,6 +126,7 @@ def main():
         json.dump(json_dict, f, indent=2)
     
     return oldest_id, newest_id 
+
 
 if __name__=='__main__':
     main()
