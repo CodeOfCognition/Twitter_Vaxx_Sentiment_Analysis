@@ -1,1 +1,0 @@
-The id of the latest tweet in our dataset is: 1466161822516625419
