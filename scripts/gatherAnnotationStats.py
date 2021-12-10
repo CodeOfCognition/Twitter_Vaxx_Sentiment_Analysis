@@ -8,7 +8,7 @@ def parse_args():
 
     return args.i
 
-#Facilitates relabeling. Ex) allows all tweets labeled "ov" to be changed to "v".
+#Facilitates relabeling. Ex) allows all tweets labeled "ov" to be change to "v".
 def change_labels(df, labelPairs):
     for pair in labelPairs:
         df.loc[df.label == pair[0], "label"] = pair[1]
@@ -52,5 +52,3 @@ def main():
 if __name__ == "__main__":
     main()
 
-
-    #get rid of urls and user names, lowercase, emojis, keep hashtags
