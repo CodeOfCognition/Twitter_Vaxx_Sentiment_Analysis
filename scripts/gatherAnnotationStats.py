@@ -11,12 +11,12 @@ def parse_args():
 #Facilitates relabeling. Ex) allows all tweets labeled "ov" to be change to "v".
 def change_labels(df, labelPairs):
     for pair in labelPairs:
-        df.loc[df.label == pair[0], "label"] = pair[1]
+        df.loc[df.topic == pair[0], "topic"] = pair[1]
     return df
 
 #checks whether there are any invalid labels
 def check_label_validity(df, labels):
-    df_invalid = df.loc[~df.label.isin(labels)]
+    df_invalid = df.loc[~df.topic.isin(labels)]
     numInvalidEntries = len(df_invalid)
     if numInvalidEntries > 0:
         print(f"{numInvalidEntries} The following entries have invalid labels:")
@@ -29,14 +29,14 @@ def check_label_validity(df, labels):
 def get_stats(df, labels):
     counts = dict()
     for l in labels:
-        counts[l] = len(df.loc[df.label == l])
+        counts[l] = len(df.loc[df.topic == l])
     return counts
 
 def main():
     # inputFile = parse_args()
-    inputFile = "data/annotated_sample2.tsv"
+    inputFile = "data/annotated_sample.tsv"
     df = pandas.read_csv(inputFile, sep="\t")
-    df["label"] = df["label"].str.lower()
+    df["topic"] = df["topic"].str.lower()
 
     # labelPairs = [("v", "o")] # list of tuples that we want to change the label of. Ex) ("v", "o") changes all labels "v" to "o"
     # df = change_labels(df, labelPairs)

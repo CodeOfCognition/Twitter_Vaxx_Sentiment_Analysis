@@ -3,14 +3,14 @@ import pandas
 #Facilitates relabeling. Ex) allows all tweets labeled "ov" to be changed to "v".
 def change_labels(df, labelPairs):
     for pair in labelPairs:
-        df.loc[df.label == pair[0], "label"] = pair[1]
+        df.loc[df.topic == pair[0], "topic"] = pair[1]
     return df
 
 def clean_data(df):
     punc = '!"$%&()*+,”-“./‘:’;<=>?[\]^_`{|}~'
     punc += "'"
 
-    df["label"] = df["label"].str.lower() #lowercase labels
+    df["topic"] = df["topic"].str.lower() #lowercase labels
     df["tweet"] = df["tweet"].str.lower() #lowercase tweets
     df["tweet"] = df["tweet"].apply(lambda x: " ".join(filter(lambda y: '&amp;' not in y, x.split()))) #words with weird ampersands removed
     df["tweet"] = df["tweet"].apply(lambda x: " ".join(filter(lambda y: 'https://' not in y, x.split()))) #links removed
