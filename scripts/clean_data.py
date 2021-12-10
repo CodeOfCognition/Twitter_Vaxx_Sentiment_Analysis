@@ -10,7 +10,8 @@ def clean_data(df):
     punc = '!"$%&()*+,”-“./‘:’;<=>?[\]^_`{|}~'
     punc += "'"
 
-    df["tweet"] = df["tweet"].str.lower() #lowercase
+    df["label"] = df["label"].str.lower() #lowercase labels
+    df["tweet"] = df["tweet"].str.lower() #lowercase tweets
     df["tweet"] = df["tweet"].apply(lambda x: " ".join(filter(lambda y: '&amp;' not in y, x.split()))) #words with weird ampersands removed
     df["tweet"] = df["tweet"].apply(lambda x: " ".join(filter(lambda y: 'https://' not in y, x.split()))) #links removed
     df["tweet"] = df["tweet"].apply(lambda x: ''.join([i for i in x if i not in punc])) #remove punctuation
