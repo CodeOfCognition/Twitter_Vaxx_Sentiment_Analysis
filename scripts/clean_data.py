@@ -19,6 +19,14 @@ def clean_data(df):
     
     return df
 
+def remove_stopwords(df):
+    with open("data/stopwords.txt", "rt") as f:
+        fin = f.read()
+        f.close()
+    stopwords = fin.split("\n")
+    df["tweet"] = df["tweet"].apply(lambda x: " ".join(filter(lambda y: y not in stopwords, x.split()))) #words with weird ampersands removed
+    
+    return df
 
 def main():
     inputFile = "data/annotated_sample.tsv"
@@ -27,6 +35,9 @@ def main():
 
     df = pandas.read_csv(inputFile, sep="\t")
     df = clean_data(df)
+    print(df.head())
+    df = remove_stopwords(df)
+    print(df.head())
 
     if not labelPairs == []:
         df = change_labels(df, labelPairs)
