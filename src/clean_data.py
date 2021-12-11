@@ -30,21 +30,18 @@ def remove_stopwords(df):
     return df
 
 def main():
-    inputFile = "data/annotated_sample.tsv"
-    outputFile = "data/annotated_sample_clean.tsv"
+    inputFile = "data/raw/annotated_data.tsv"
+    outputFile = "data/clean/annotated_data_clean.tsv"
     labelPairs = [] # list of tuples that we want to change the label of. Ex) ("v", "o") changes all labels "v" to "o"
 
     df = pandas.read_csv(inputFile, sep="\t")
     df = clean_data(df)
-    print(df.head())
     df = remove_stopwords(df)
-    print(df.head())
 
     if not labelPairs == []:
         df = change_labels(df, labelPairs)
     
     df.to_csv(path_or_buf = outputFile, sep="\t", index=False)
-
 
 
 

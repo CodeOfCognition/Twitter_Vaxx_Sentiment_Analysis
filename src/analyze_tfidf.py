@@ -35,7 +35,6 @@ def get_tf(df, uniqueWords, topics):
 def get_tfidf(df, uniqueWords, topics, idfDict, tfDict, n):
     tfidfDict = dict()
     topWordsDict = dict.fromkeys(topics, None)
-    n = 10
     for t in topics:
         tfidfDict[t] = dict()
         for word in uniqueWords:
@@ -48,17 +47,16 @@ def get_tfidf(df, uniqueWords, topics, idfDict, tfDict, n):
 
 
 def main():
-    inputFile = "data/annotated_sample_clean.tsv"
-    outputFile = "data/results"
+    inputFile = "data/clean/annotated_data_clean.tsv"
+    outputFile = "data/results/tfidf_results.json"
+    n = 5
 
     df = pandas.read_csv(inputFile, sep="\t")
     uniqueWords = set(df["tweet"].str.cat(sep=" ").split())
     topics = set(df["topic"].str.cat(sep=" ").split())
     idfDict = get_idf(df, uniqueWords, topics)
     tfDict = get_tf(df, uniqueWords, topics)
-    results = get_tfidf(df, uniqueWords, topics, idfDict, tfDict, 5)
-    print("look")
-    print(results)
+    results = get_tfidf(df, uniqueWords, topics, idfDict, tfDict, n)
     with open(outputFile, "wt") as f:
         json.dump(results, f)
 
