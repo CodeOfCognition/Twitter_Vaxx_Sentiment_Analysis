@@ -31,7 +31,7 @@ def main():
     for p in range(num_periods):
         if sample_time > now:
             break
-        save_path = os.path.join(save_dir, f'tweets{p+95}.json')
+        save_path = os.path.join(save_dir, f'tweets{p}.json')
         start_time = sample_time.strftime('%Y-%m-%dT%H:%M:%S%z')
         
         _,_  = cd.collect_data(query, save_path, num_tweets, end_time=sample_time)   
