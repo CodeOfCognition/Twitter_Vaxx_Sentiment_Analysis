@@ -29,5 +29,8 @@ Create a .env file with required variables for authentication.
 ## Running 
 
 1. Collect data by running `python3 src/collect_data.py`
-2. Perform analysis using the other python files.
+2. Annotate data (rate sentiment and assign topic)
+3. Clean data by running `python3 src/clean_data.py`
+4. Run `python3 src/analyze_tfidf.py` to get 5 words that best characterize each topic
+5. Run `python3 src/analyze_sentiment.py` to get average sentiment for each topic
 
